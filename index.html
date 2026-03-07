@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groups of Five — ASTRO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --bg: #04050f;
+    --surface: #0a0d1f;
+    --surface2: #111428;
+    --border: #1e2545;
+    --accent: #00f0ff;
+    --accent2: #ff3cac;
+    --accent3: #f5c400;
+    --text: #e8eaff;
+    --muted: #5a6080;
+    --imposter: #ff3c3c;
+    --glow: 0 0 20px rgba(0,240,255,0.4);
+    --glow2: 0 0 20px rgba(255,60,172,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* STARFIELD */
+  .stars {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: 
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 8%, rgba(0,240,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 22%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 55%, rgba(255,60,172,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 15% 72%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 88%, rgba(0,240,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 35% 65%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 35%, rgba(245,196,0,0.4) 0%, transparent 100%);
+  }
+
+  /* SCREENS */
+  .screen { display: none; position: relative; z-index: 1; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ===== LANDING ===== */
+  #landing {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    gap: 32px;
+  }
+  .logo-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 0 30px rgba(0,240,255,0.5));
+  }
+  .logo-sub {
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .landing-btns { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 340px; }
+  
+  .btn {
+    padding: 16px 32px;
+    border-radius: 4px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .btn:hover::before { opacity: 1; }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent) 0%, #0080ff 100%);
+    color: #000;
+    box-shadow: var(--glow);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,240,255,0.6); }
+  
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    box-shadow: var(--glow2);
+  }
+  .btn-secondary:hover { background: rgba(255,60,172,0.1); transform: translateY(-2px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  .btn-danger {
+    background: linear-gradient(135deg, var(--imposter) 0%, #8b0000 100%);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255,60,60,0.4);
+  }
+  .btn-danger:hover { transform: translateY(-2px); }
+
+  /* ===== TEACHER VIEW ===== */
+  #teacher {
+    padding: 24px;
+    gap: 24px;
+    align-items: center;
+  }
+  .teacher-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+  }
+  .teacher-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .teacher-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+    max-width: 900px;
+  }
+  @media(max-width: 600px) { .teacher-main { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .panel-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* QR Panel */
+  .qr-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  #qr-display {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    width: fit-content;
+    box-shadow: var(--glow);
+  }
+  .qr-url {
+    font-size: 0.7rem;
+    color: var(--muted);
+    word-break: break-all;
+    text-align: center;
+    max-width: 240px;
+  }
+
+  /* Game Setup */
+  .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  label { font-size: 0.75rem; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; }
+  input, select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  
+  .word-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .word-pill:hover { border-color: var(--imposter); color: var(--imposter); }
+  .word-pill.selected { border-color: var(--accent); color: var(--accent); background: rgba(0,240,255,0.08); }
+  
+  .words-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+  /* Groups tracker */
+  .groups-list { display: flex; flex-direction: column; gap: 12px; }
+  .group-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .group-name { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; color: var(--accent); }
+  .group-players { font-size: 0.75rem; color: var(--muted); }
+  .group-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 100px; }
+  .status-waiting { background: rgba(245,196,0,0.1); color: var(--accent3); border: 1px solid rgba(245,196,0,0.3); }
+  .status-ready { background: rgba(0,240,255,0.1); color: var(--accent); border: 1px solid rgba(0,240,255,0.3); }
+  .status-playing { background: rgba(255,60,172,0.1); color: var(--accent2); border: 1px solid rgba(255,60,172,0.3); }
+
+  /* ===== JOIN SCREEN ===== */
+  #join {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 24px;
+  }
+  .join-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .join-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.4rem;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  /* ===== LOBBY ===== */
+  #lobby {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 24px;
+    text-align: center;
+  }
+  .lobby-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .lobby-group-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .player-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; }
+  .player-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    color: var(--text);
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+  /* ===== CARD FLIP ===== */
+  #card-screen {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 32px;
+  }
+  .card-instruction {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  
+  .card-3d-wrapper {
+    perspective: 1000px;
+    width: 280px;
+    height: 380px;
+    cursor: pointer;
+  }
+  .card-3d {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.23,1,0.32,1);
+  }
+  .card-3d.flipped { transform: rotateY(180deg); }
+  
+  .card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    text-align: center;
+  }
+  
+  .card-back {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    border: 2px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .card-back-pattern {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: 
+      repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,240,255,0.03) 10px, rgba(0,240,255,0.03) 11px),
+      repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,60,172,0.03) 10px, rgba(255,60,172,0.03) 11px);
+  }
+  .card-back-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--border);
+    letter-spacing: 0.1em;
+    position: relative;
+  }
+  .card-back-sub { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.3em; margin-top: 8px; position: relative; }
+  
+  .card-front-real {
+    background: linear-gradient(135deg, #001a3a 0%, #000d2e 100%);
+    border: 2px solid var(--accent);
+    box-shadow: var(--glow), 0 20px 60px rgba(0,0,0,0.5);
+    transform: rotateY(180deg);
+  }
+  .card-front-imposter {
+    background: linear-gradient(135deg, #3a0000 0%, #1a0000 100%);
+    border: 2px solid var(--imposter);
+    box-shadow: 0 0 30px rgba(255,60,60,0.4), 0 20px 60px rgba(0,0,0,0.5);
+    transform: rotateY(180deg);
+  }
+  
+  .card-role-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .card-word {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .card-word.astro { color: var(--accent); filter: drop-shadow(0 0 10px rgba(0,240,255,0.5)); }
+  .card-word.imposter { color: var(--imposter); filter: drop-shadow(0 0 10px rgba(255,60,60,0.5)); }
+  
+  .card-hint {
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+  
+  .card-corners {
+    position: absolute;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.1);
+  }
+  .corner-tl { top: 12px; left: 12px; }
+  .corner-br { bottom: 12px; right: 12px; transform: rotate(180deg); }
+
+  .tap-hint {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* ===== GAME SCREEN ===== */
+  #game {
+    align-items: center;
+    padding: 24px 20px;
+    gap: 20px;
+  }
+  .game-header {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .game-group-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    color: var(--accent);
+  }
+  .round-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  
+  .players-turn-list {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .player-turn-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s;
+  }
+  .player-turn-card.active-turn {
+    border-color: var(--accent);
+    background: rgba(0,240,255,0.05);
+    box-shadow: var(--glow);
+  }
+  .player-turn-card.done {
+    opacity: 0.5;
+  }
+  .player-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .player-turn-card.active-turn .player-number {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+  .player-turn-name { font-size: 0.85rem; flex: 1; }
+  .player-turn-word {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    color: var(--accent);
+    min-width: 80px;
+    text-align: right;
+  }
+  .word-input-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 500px;
+    align-items: center;
+  }
+  .word-input-row input { flex: 1; }
+
+  /* Vote screen */
+  #vote {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 24px;
+    text-align: center;
+  }
+  .vote-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    color: var(--accent2);
+    filter: drop-shadow(0 0 20px rgba(255,60,172,0.5));
+  }
+  .vote-subtitle { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.15em; }
+  .vote-players { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 400px; }
+  .vote-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .vote-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(255,60,172,0.05); }
+  .vote-btn.selected { border-color: var(--accent2); background: rgba(255,60,172,0.1); color: var(--accent2); }
+  .vote-icon { font-size: 1.2rem; }
+
+  /* Result screen */
+  #result {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 24px;
+    text-align: center;
+  }
+  .result-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.5rem, 6vw, 3rem);
+    font-weight: 900;
+    padding: 24px 40px;
+    border-radius: 12px;
+  }
+  .result-win {
+    color: var(--accent);
+    background: rgba(0,240,255,0.08);
+    border: 2px solid var(--accent);
+    box-shadow: var(--glow);
+    animation: winPulse 2s ease-in-out infinite;
+  }
+  .result-lose {
+    color: var(--imposter);
+    background: rgba(255,60,60,0.08);
+    border: 2px solid var(--imposter);
+    box-shadow: 0 0 30px rgba(255,60,60,0.3);
+  }
+  @keyframes winPulse { 0%,100% { box-shadow: 0 0 20px rgba(0,240,255,0.3); } 50% { box-shadow: 0 0 40px rgba(0,240,255,0.6); } }
+  
+  .result-reveal {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .result-word-big {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--accent3);
+    filter: drop-shadow(0 0 15px rgba(245,196,0,0.5));
+    margin: 16px 0;
+  }
+
+  /* Shuffle animation */
+  @keyframes shuffle {
+    0% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-20px) rotate(-5deg); }
+    75% { transform: translateX(20px) rotate(5deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+  }
+  .shuffling { animation: shuffle 0.3s ease-in-out 3; }
+
+  .divider { width: 100%; max-width: 400px; border: none; border-top: 1px solid var(--border); }
+
+  /* tabs */
+  .tabs { display: flex; gap: 0; width: 100%; max-width: 900px; }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.2s;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .tab:first-child { border-radius: 4px 0 0 4px; }
+  .tab:last-child { border-radius: 0 4px 4px 0; }
+  .tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  .tab-content { display: none; width: 100%; max-width: 900px; }
+  .tab-content.active { display: flex; flex-direction: column; gap: 16px; }
+
+  .flex-row { display: flex; gap: 12px; align-items: flex-end; }
+  .flex-row > * { flex: 1; }
+
+  .badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: #fff;
+    font-size: 0.65rem;
+    font-family: 'Orbitron', sans-serif;
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<!-- LANDING -->
+<div id="landing" class="screen active">
+  <div>
+    <div class="logo-title">ASTRO</div>
+    <div class="logo-sub">Groups of Five · Social Deduction</div>
+  </div>
+  <div class="landing-btns">
+    <button class="btn btn-secondary" onclick="showScreen('teacher')">🎓 Teacher / Host View</button>
+    <button class="btn btn-primary" onclick="showScreen('join')">🚀 Join Game</button>
+  </div>
+  <p style="font-size:0.7rem;color:var(--muted);max-width:280px;text-align:center;line-height:1.8">
+    Everyone gets a secret ASTRO word — except one Imposter. Take turns giving clues. Find the Imposter!
+  </p>
+</div>
+
+<!-- TEACHER VIEW -->
+<div id="teacher" class="screen">
+  <div class="teacher-header">
+    <span class="teacher-title">⚡ HOST DASHBOARD</span>
+    <button class="btn btn-ghost" style="padding:8px 16px;font-size:0.7rem" onclick="showScreen('landing')">← Back</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('setup')">Setup</div>
+    <div class="tab" onclick="switchTab('qr')">QR Code</div>
+    <div class="tab" onclick="switchTab('monitor')">Monitor <span class="badge-count" id="group-count-badge">0</span></div>
+  </div>
+
+  <!-- SETUP TAB -->
+  <div id="tab-setup" class="tab-content active">
+    <div class="panel">
+      <div class="panel-title">🎮 Game Configuration</div>
+      <div class="flex-row">
+        <div class="form-group">
+          <label>Session Name</label>
+          <input type="text" id="session-name" placeholder="e.g. Period 3" value="ASTRO Session">
+        </div>
+        <div class="form-group">
+          <label>Players per Group</label>
+          <select id="group-size">
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Number of Groups</label>
+        <select id="num-groups">
+          <option value="1">1 Group</option>
+          <option value="2">2 Groups</option>
+          <option value="3" selected>3 Groups</option>
+          <option value="4">4 Groups</option>
+          <option value="5">5 Groups</option>
+          <option value="6">6 Groups</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">🔤 ASTRO Word Bank — Select Active Words</div>
+      <p style="font-size:0.7rem;color:var(--muted);margin-bottom:12px">Click to toggle. Each group gets one random word.</p>
+      <div class="words-grid" id="word-bank"></div>
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button class="btn btn-ghost" style="padding:8px 14px;font-size:0.7rem" onclick="selectAllWords()">Select All</button>
+        <button class="btn btn-ghost" style="padding:8px 14px;font-size:0.7rem" onclick="clearAllWords()">Clear All</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateGame()">Generate Game & QR Code →</button>
+  </div>
+
+  <!-- QR TAB -->
+  <div id="tab-qr" class="tab-content">
+    <div class="panel">
+      <div class="panel-title">📱 Scan to Join</div>
+      <div class="qr-wrapper">
+        <div id="qr-display">
+          <p style="color:#999;font-size:0.8rem;padding:40px;text-align:center">Generate game first →</p>
+        </div>
+        <div class="qr-url" id="qr-url-display">Configure & generate your game in Setup</div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn btn-primary" style="padding:10px 20px;font-size:0.75rem" onclick="copyJoinLink()">Copy Link</button>
+          <button class="btn btn-ghost" style="padding:10px 20px;font-size:0.75rem" onclick="openJoinLink()">Open →</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">📋 Group Codes</div>
+      <div id="group-codes-list" style="display:flex;flex-direction:column;gap:8px">
+        <p style="color:var(--muted);font-size:0.8rem">Generate game to see group codes</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONITOR TAB -->
+  <div id="tab-monitor" class="tab-content">
+    <div class="panel">
+      <div class="panel-title">📊 Live Groups</div>
+      <div class="groups-list" id="groups-monitor">
+        <p style="color:var(--muted);font-size:0.8rem">No active game. Generate one in Setup.</p>
+      </div>
+    </div>
+    <button class="btn btn-danger" id="reveal-all-btn" style="display:none" onclick="revealAllWords()">
+      🔓 Reveal All Words to Monitor
+    </button>
+    <div id="reveal-panel" style="display:none" class="panel">
+      <div class="panel-title">🔍 Word Assignments</div>
+      <div id="reveal-content" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- JOIN SCREEN -->
+<div id="join" class="screen">
+  <div style="text-align:center">
+    <div class="logo-title" style="font-size:2rem">ASTRO</div>
+    <div class="logo-sub">Join Game</div>
+  </div>
+  <div class="join-card">
+    <div class="join-title">🚀 Pick Your Group</div>
+    <div class="form-group">
+      <label>Your Name</label>
+      <input type="text" id="player-name" placeholder="Enter your name..." maxlength="20">
+    </div>
+    <div class="form-group">
+      <label>Select Group</label>
+      <div id="group-select-list" style="display:flex;flex-direction:column;gap:8px">
+        <!-- groups rendered here -->
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="joinGroup()">Enter Group →</button>
+    <button class="btn btn-ghost" style="padding:10px;font-size:0.7rem" onclick="showScreen('landing')">← Back</button>
+  </div>
+</div>
+
+<!-- LOBBY -->
+<div id="lobby" class="screen">
+  <div class="lobby-card">
+    <div class="logo-sub">You're in</div>
+    <div class="lobby-group-name" id="lobby-group-display">GROUP 1</div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:4px">Waiting for everyone to join...</p>
+    <hr class="divider" style="margin:20px 0">
+    <div class="panel-title">Players Joined</div>
+    <div class="player-chips" id="lobby-players"></div>
+    <hr class="divider" style="margin:20px 0">
+    <p id="lobby-status" style="font-size:0.75rem;color:var(--muted);margin-bottom:16px">Waiting for host to start...</p>
+    <button class="btn btn-primary" id="start-game-btn" onclick="startDeal()" style="display:none">Deal Cards →</button>
+    <button class="btn btn-ghost" style="padding:10px;font-size:0.7rem;margin-top:10px" onclick="showScreen('landing')">← Leave</button>
+  </div>
+</div>
+
+<!-- CARD FLIP -->
+<div id="card-screen" class="screen">
+  <p class="card-instruction">YOUR SECRET ROLE</p>
+  <p class="tap-hint">Tap the card to reveal</p>
+  <div class="card-3d-wrapper" onclick="flipCard()">
+    <div class="card-3d" id="the-card">
+      <!-- Back -->
+      <div class="card-face card-back">
+        <div class="card-back-pattern"></div>
+        <span class="card-back-logo">ASTRO</span>
+        <span class="card-back-sub">GROUPS OF FIVE</span>
+      </div>
+      <!-- Front filled by JS -->
+      <div class="card-face" id="card-front"></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="card-continue-btn" style="display:none;margin-top:16px" onclick="enterGame()">Enter Game Room →</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game" class="screen">
+  <div class="game-header">
+    <span class="game-group-name" id="game-group-name">GROUP 1</span>
+    <span class="round-badge" id="round-display">Round 1</span>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;width:100%;max-width:500px;font-size:0.8rem;color:var(--muted);line-height:1.7">
+    🎮 Each player says <strong style="color:var(--text)">one word</strong> to hint at the secret ASTRO word. The Imposter must bluff!
+  </div>
+
+  <div class="players-turn-list" id="turn-list"></div>
+
+  <div class="word-input-row" id="word-input-row" style="display:none">
+    <input type="text" id="clue-word-input" placeholder="Your one word clue..." maxlength="20">
+    <button class="btn btn-primary" style="padding:14px 20px;white-space:nowrap" onclick="submitClue()">Submit</button>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+    <button class="btn btn-secondary" style="padding:10px 20px;font-size:0.75rem" onclick="showVote()">🗳 Vote for Imposter</button>
+    <button class="btn btn-ghost" style="padding:10px 20px;font-size:0.75rem" onclick="nextRound()">↺ New Round</button>
+  </div>
+</div>
+
+<!-- VOTE -->
+<div id="vote" class="screen">
+  <div class="vote-title">WHO'S THE IMPOSTER?</div>
+  <div class="vote-subtitle">Vote for who you think is bluffing</div>
+  <div class="vote-players" id="vote-list"></div>
+  <button class="btn btn-danger" id="confirm-vote-btn" style="display:none;width:100%;max-width:400px" onclick="confirmVote()">⚡ Confirm Vote</button>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="screen">
+  <div class="result-badge" id="result-badge">—</div>
+  <div class="result-reveal" id="result-sub">The ASTRO word was...</div>
+  <div class="result-word-big" id="result-word">—</div>
+  <div id="result-extra" style="font-size:0.8rem;color:var(--muted);max-width:360px;line-height:1.8"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+    <button class="btn btn-primary" onclick="playAgain()">Play Again →</button>
+    <button class="btn btn-ghost" onclick="showScreen('landing')">← Menu</button>
+  </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+const ASTRO_WORDS = [
+  "GALAXY","NEBULA","COMET","ORBIT","PULSAR","QUASAR","ECLIPSE","AURORA",
+  "METEOR","COSMOS","STELLAR","LUNAR","SOLAR","WORMHOLE","SUPERNOVA",
+  "ASTEROID","BLACKHOLE","PHOTON","GRAVITY","SATELLITE","TELESCOPE","HORIZON",
+  "EQUINOX","ZENITH","NOVA","CORONA","EXOPLANET","STARDUST","LIGHTYEAR","VORTEX"
+];
+
+let gameState = {
+  session: null,
+  groups: [],
+  currentGroup: null,
+  currentPlayer: null,
+  myRole: null, // 'astro' | 'imposter'
+  myWord: null,
+  players: [],
+  clues: [],
+  currentTurnIndex: 0,
+  votedFor: null,
+  round: 1,
+  selectedWords: [...ASTRO_WORDS],
+};
+
+// Fake shared state via localStorage for demo
+function saveShared(key, val) { try { localStorage.setItem('astro_' + key, JSON.stringify(val)); } catch(e){} }
+function loadShared(key) { try { const v = localStorage.getItem('astro_' + key); return v ? JSON.parse(v) : null; } catch(e){ return null; } }
+
+// ==================== SCREENS ====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ==================== TABS ====================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['setup','qr','monitor'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if (name === 'monitor') refreshMonitor();
+}
+
+// ==================== WORD BANK ====================
+function renderWordBank() {
+  const container = document.getElementById('word-bank');
+  container.innerHTML = '';
+  ASTRO_WORDS.forEach(w => {
+    const pill = document.createElement('div');
+    pill.className = 'word-pill selected';
+    pill.textContent = w;
+    pill.dataset.word = w;
+    pill.onclick = () => {
+      pill.classList.toggle('selected');
+      gameState.selectedWords = [...document.querySelectorAll('.word-pill.selected')].map(p => p.dataset.word);
+    };
+    container.appendChild(pill);
+  });
+  gameState.selectedWords = [...ASTRO_WORDS];
+}
+
+function selectAllWords() {
+  document.querySelectorAll('.word-pill').forEach(p => p.classList.add('selected'));
+  gameState.selectedWords = [...ASTRO_WORDS];
+}
+function clearAllWords() {
+  document.querySelectorAll('.word-pill').forEach(p => p.classList.remove('selected'));
+  gameState.selectedWords = [];
+}
+
+// ==================== GENERATE GAME ====================
+function generateGame() {
+  const sessionName = document.getElementById('session-name').value || 'ASTRO Session';
+  const numGroups = parseInt(document.getElementById('num-groups').value);
+  const groupSize = parseInt(document.getElementById('group-size').value);
+
+  if (gameState.selectedWords.length < numGroups) {
+    alert('Please select at least ' + numGroups + ' words!');
+    return;
+  }
+
+  // Shuffle words and assign one per group
+  const shuffled = [...gameState.selectedWords].sort(() => Math.random() - 0.5);
+  const groupNames = ['ALPHA','BETA','GAMMA','DELTA','EPSILON','ZETA'];
+
+  gameState.session = { name: sessionName, groupSize };
+  gameState.groups = Array.from({length: numGroups}, (_, i) => ({
+    id: i + 1,
+    name: 'GROUP ' + groupNames[i],
+    word: shuffled[i],
+    players: [],
+    started: false,
+  }));
+
+  // Save to shared storage
+  saveShared('game', gameState.groups);
+  saveShared('session', gameState.session);
+
+  // Generate QR
+  generateQR();
+  renderGroupCodes();
+  renderGroupsMonitor();
+  document.getElementById('group-count-badge').textContent = numGroups;
+  document.getElementById('reveal-all-btn').style.display = 'block';
+
+  switchTab('qr');
+  alert('✅ Game created! ' + numGroups + ' groups generated. Show students the QR code!');
+}
+
+function getJoinURL() {
+  return window.location.href.split('?')[0] + '?join=1';
+}
+
+function generateQR() {
+  const container = document.getElementById('qr-display');
+  container.innerHTML = '';
+  const url = getJoinURL();
+  document.getElementById('qr-url-display').textContent = url;
+  try {
+    new QRCode(container, {
+      text: url,
+      width: 220,
+      height: 220,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch(e) {
+    container.innerHTML = '<p style="color:#999;font-size:0.8rem;padding:20px;text-align:center">QR library unavailable — share the link below</p>';
+  }
+}
+
+function copyJoinLink() {
+  navigator.clipboard.writeText(getJoinURL()).then(() => alert('Link copied!')).catch(() => alert(getJoinURL()));
+}
+function openJoinLink() {
+  // Simulate joining by switching to join screen
+  initJoinScreen();
+  showScreen('join');
+}
+
+function renderGroupCodes() {
+  const container = document.getElementById('group-codes-list');
+  container.innerHTML = '';
+  gameState.groups.forEach(g => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;';
+    row.innerHTML = `<span style="font-family:Orbitron,sans-serif;font-size:0.8rem;color:var(--accent)">${g.name}</span>
+      <span style="font-size:0.7rem;color:var(--muted)">Word: <strong style="color:var(--accent3)">${g.word}</strong></span>`;
+    container.appendChild(row);
+  });
+}
+
+function renderGroupsMonitor() {
+  const container = document.getElementById('groups-monitor');
+  container.innerHTML = '';
+  const groups = loadShared('game') || gameState.groups;
+  groups.forEach(g => {
+    const div = document.createElement('div');
+    div.className = 'group-item';
+    const playerCount = g.players ? g.players.length : 0;
+    const session = loadShared('session');
+    const groupSize = session ? session.groupSize : 5;
+    const status = g.started ? 'playing' : playerCount >= groupSize ? 'ready' : 'waiting';
+    div.innerHTML = `
+      <div>
+        <div class="group-name">${g.name}</div>
+        <div class="group-players">${playerCount} player${playerCount !== 1 ? 's' : ''} joined</div>
+      </div>
+      <span class="group-status status-${status}">${status}</span>`;
+    container.appendChild(div);
+  });
+}
+
+function refreshMonitor() {
+  const groups = loadShared('game');
+  if (groups) {
+    gameState.groups = groups;
+    renderGroupsMonitor();
+  }
+}
+
+function revealAllWords() {
+  const panel = document.getElementById('reveal-panel');
+  const content = document.getElementById('reveal-content');
+  panel.style.display = 'block';
+  content.innerHTML = '';
+  const groups = loadShared('game') || gameState.groups;
+  groups.forEach(g => {
+    const row = document.createElement('div');
+    row.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 16px;';
+    const players = g.players && g.players.length > 0 ? g.players.join(', ') : 'No players yet';
+    const imposterIdx = g.imposterIndex !== undefined ? g.imposterIndex : -1;
+    const imposterName = g.players && imposterIdx >= 0 ? g.players[imposterIdx] : 'TBD';
+    row.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-family:Orbitron,sans-serif;font-size:0.8rem;color:var(--accent)">${g.name}</span>
+        <span style="font-family:Orbitron,sans-serif;font-size:0.8rem;color:var(--accent3)">${g.word}</span>
+      </div>
+      <div style="font-size:0.7rem;color:var(--muted)">Players: ${players}</div>
+      <div style="font-size:0.7rem;color:var(--imposter);margin-top:4px">Imposter: ${imposterName}</div>`;
+    content.appendChild(row);
+  });
+}
+
+// ==================== JOIN ====================
+function initJoinScreen() {
+  const groups = loadShared('game') || gameState.groups;
+  if (!groups || groups.length === 0) {
+    alert('No active game found! Ask your teacher to generate one.');
+    return;
+  }
+  const container = document.getElementById('group-select-list');
+  container.innerHTML = '';
+  groups.forEach((g, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'vote-btn';
+    btn.dataset.groupId = g.id;
+    btn.innerHTML = `<span class="vote-icon">🌌</span> <span>${g.name}</span> <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)">${g.players ? g.players.length : 0} joined</span>`;
+    btn.onclick = () => {
+      document.querySelectorAll('#group-select-list .vote-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btn.dataset.selected = 'true';
+    };
+    container.appendChild(btn);
+  });
+}
+
+function joinGroup() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) { alert('Enter your name!'); return; }
+  
+  const selected = document.querySelector('#group-select-list .vote-btn.selected');
+  if (!selected) { alert('Select a group!'); return; }
+  
+  const groupId = parseInt(selected.dataset.groupId);
+  const groups = loadShared('game') || gameState.groups;
+  const group = groups.find(g => g.id === groupId);
+  if (!group) { alert('Group not found!'); return; }
+  
+  // Add player to group
+  if (!group.players) group.players = [];
+  if (group.players.includes(name)) {
+    // Player rejoining
+  } else {
+    group.players.push(name);
+  }
+  
+  // Assign imposter if not done yet
+  if (group.imposterIndex === undefined) {
+    group.imposterIndex = Math.floor(Math.random() * (group.players.length));
+  }
+  
+  // Recalculate imposter on full group
+  const session = loadShared('session');
+  const groupSize = session ? session.groupSize : 5;
+  if (group.players.length >= groupSize && !group.imposterLocked) {
+    group.imposterIndex = Math.floor(Math.random() * group.players.length);
+    group.imposterLocked = true;
+  }
+  
+  saveShared('game', groups);
+  
+  // Store local player state
+  gameState.currentGroup = group;
+  gameState.currentPlayer = name;
+  gameState.players = [...group.players];
+  gameState.myWord = group.word;
+  
+  // Check if I'm the imposter
+  const myIndex = group.players.indexOf(name);
+  gameState.myRole = (myIndex === group.imposterIndex) ? 'imposter' : 'astro';
+  
+  // Show lobby
+  showLobby(group, name);
+}
+
+// ==================== LOBBY ====================
+function showLobby(group, playerName) {
+  document.getElementById('lobby-group-display').textContent = group.name;
+  renderLobbyPlayers(group.players);
+  
+  const session = loadShared('session');
+  const groupSize = session ? session.groupSize : 5;
+  
+  if (group.players.length >= groupSize) {
+    document.getElementById('lobby-status').textContent = 'Group is full! Ready to play.';
+    document.getElementById('start-game-btn').style.display = 'block';
+  } else {
+    document.getElementById('lobby-status').textContent = `Waiting for ${groupSize - group.players.length} more player(s)...`;
+    document.getElementById('start-game-btn').style.display = 'none';
+    // Poll
+    setTimeout(() => checkLobbyUpdate(group.id, playerName), 2000);
+  }
+  
+  showScreen('lobby');
+}
+
+function checkLobbyUpdate(groupId, playerName) {
+  if (!document.getElementById('lobby').classList.contains('active')) return;
+  const groups = loadShared('game');
+  if (!groups) return;
+  const group = groups.find(g => g.id === groupId);
+  if (!group) return;
+  
+  gameState.currentGroup = group;
+  gameState.players = [...(group.players || [])];
+  renderLobbyPlayers(group.players || []);
+  
+  const session = loadShared('session');
+  const groupSize = session ? session.groupSize : 5;
+  
+  if (group.players && group.players.length >= groupSize) {
+    document.getElementById('lobby-status').textContent = 'Group is full! Ready to play.';
+    document.getElementById('start-game-btn').style.display = 'block';
+    
+    // Recalculate my role
+    const myIndex = group.players.indexOf(playerName);
+    gameState.myRole = (myIndex === group.imposterIndex) ? 'imposter' : 'astro';
+    gameState.myWord = group.word;
+    gameState.currentGroup = group;
+  } else {
+    document.getElementById('lobby-status').textContent = `Waiting for ${groupSize - (group.players ? group.players.length : 0)} more player(s)...`;
+    setTimeout(() => checkLobbyUpdate(groupId, playerName), 2000);
+  }
+}
+
+function renderLobbyPlayers(players) {
+  const container = document.getElementById('lobby-players');
+  container.innerHTML = '';
+  (players || []).forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'player-chip';
+    chip.textContent = p;
+    container.appendChild(chip);
+  });
+}
+
+// ==================== CARD DEAL ====================
+function startDeal() {
+  // Shuffle visual effect first, then show card
+  showCardScreen();
+}
+
+function showCardScreen() {
+  const cardFront = document.getElementById('card-front');
+  const card = document.getElementById('the-card');
+  card.classList.remove('flipped');
+  document.getElementById('card-continue-btn').style.display = 'none';
+  
+  if (gameState.myRole === 'imposter') {
+    cardFront.className = 'card-face card-front-imposter';
+    cardFront.innerHTML = `
+      <span class="card-corners corner-tl">ASTRO</span>
+      <div class="card-role-label">YOUR ROLE</div>
+      <div class="card-word imposter">IMPOSTER</div>
+      <div class="card-hint">You don't know the ASTRO word.<br>Listen carefully and bluff!<br>Guess the word to win.</div>
+      <span class="card-corners corner-br">ASTRO</span>`;
+  } else {
+    cardFront.className = 'card-face card-front-real';
+    cardFront.innerHTML = `
+      <span class="card-corners corner-tl">ASTRO</span>
+      <div class="card-role-label">THE ASTRO WORD IS</div>
+      <div class="card-word astro">${gameState.myWord}</div>
+      <div class="card-hint">Give a one-word clue without<br>revealing the word directly.<br>Unmask the Imposter!</div>
+      <span class="card-corners corner-br">ASTRO</span>`;
+  }
+  
+  showScreen('card-screen');
+}
+
+function flipCard() {
+  const card = document.getElementById('the-card');
+  if (!card.classList.contains('flipped')) {
+    card.classList.add('flipped');
+    setTimeout(() => {
+      document.getElementById('card-continue-btn').style.display = 'block';
+    }, 800);
+  }
+}
+
+// ==================== GAME ====================
+function enterGame() {
+  gameState.clues = [];
+  gameState.currentTurnIndex = 0;
+  gameState.round = gameState.round || 1;
+  
+  // Shuffle player order for this round
+  const shuffledPlayers = [...gameState.players].sort(() => Math.random() - 0.5);
+  gameState.shuffledOrder = shuffledPlayers;
+  
+  renderGameScreen();
+  showScreen('game');
+}
+
+function renderGameScreen() {
+  document.getElementById('game-group-name').textContent = gameState.currentGroup.name;
+  document.getElementById('round-display').textContent = 'Round ' + gameState.round;
+  
+  const list = document.getElementById('turn-list');
+  list.innerHTML = '';
+  
+  (gameState.shuffledOrder || gameState.players).forEach((player, i) => {
+    const card = document.createElement('div');
+    card.className = 'player-turn-card' + 
+      (i === gameState.currentTurnIndex ? ' active-turn' : '') +
+      (i < gameState.currentTurnIndex ? ' done' : '');
+    card.id = 'turn-card-' + i;
+    
+    const clue = gameState.clues[i];
+    const isMe = player === gameState.currentPlayer;
+    
+    card.innerHTML = `
+      <div class="player-number">${i + 1}</div>
+      <div class="player-turn-name">${player}${isMe ? ' (you)' : ''}</div>
+      <div class="player-turn-word">${clue || (i < gameState.currentTurnIndex ? '—' : (i === gameState.currentTurnIndex ? '...' : ''))}</div>`;
+    list.appendChild(card);
+  });
+  
+  // Show input if it's my turn
+  const order = gameState.shuffledOrder || gameState.players;
+  const currentPlayerName = order[gameState.currentTurnIndex];
+  const isMyTurn = currentPlayerName === gameState.currentPlayer;
+  const allDone = gameState.currentTurnIndex >= order.length;
+  
+  const inputRow = document.getElementById('word-input-row');
+  if (isMyTurn && !allDone) {
+    inputRow.style.display = 'flex';
+    document.getElementById('clue-word-input').value = '';
+    document.getElementById('clue-word-input').focus();
+  } else {
+    inputRow.style.display = 'none';
+  }
+}
+
+function submitClue() {
+  const word = document.getElementById('clue-word-input').value.trim();
+  if (!word) { alert('Enter a word!'); return; }
+  if (word.includes(' ')) { alert('One word only!'); return; }
+  
+  gameState.clues[gameState.currentTurnIndex] = word.toUpperCase();
+  gameState.currentTurnIndex++;
+  
+  // Animate transition
+  document.getElementById('clue-word-input').value = '';
+  renderGameScreen();
+  
+  // Scroll to active
+  const active = document.querySelector('.player-turn-card.active-turn');
+  if (active) active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function nextRound() {
+  gameState.round++;
+  gameState.clues = [];
+  gameState.currentTurnIndex = 0;
+  gameState.shuffledOrder = [...gameState.players].sort(() => Math.random() - 0.5);
+  renderGameScreen();
+}
+
+// ==================== VOTE ====================
+function showVote() {
+  const list = document.getElementById('vote-list');
+  list.innerHTML = '';
+  gameState.votedFor = null;
+  document.getElementById('confirm-vote-btn').style.display = 'none';
+  
+  gameState.players.forEach(player => {
+    if (player === gameState.currentPlayer) return; // Can't vote for yourself
+    const btn = document.createElement('div');
+    btn.className = 'vote-btn';
+    btn.innerHTML = `<span class="vote-icon">👤</span> <span>${player}</span>`;
+    btn.onclick = () => {
+      document.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      gameState.votedFor = player;
+      document.getElementById('confirm-vote-btn').style.display = 'block';
+    };
+    list.appendChild(btn);
+  });
+  
+  showScreen('vote');
+}
+
+function confirmVote() {
+  if (!gameState.votedFor) return;
+  
+  // Determine if vote was correct
+  const imposterIndex = gameState.currentGroup.imposterIndex;
+  const imposterName = gameState.players[imposterIndex];
+  const correct = gameState.votedFor === imposterName;
+  
+  showResult(correct, imposterName);
+}
+
+// ==================== RESULT ====================
+function showResult(correct, imposterName) {
+  const badge = document.getElementById('result-badge');
+  const word = document.getElementById('result-word');
+  const extra = document.getElementById('result-extra');
+  
+  word.textContent = gameState.myWord;
+  
+  if (correct) {
+    badge.className = 'result-badge result-win';
+    badge.textContent = '🎉 IMPOSTER CAUGHT!';
+    document.getElementById('result-sub').textContent = 'You identified the Imposter! The ASTRO word was...';
+    extra.innerHTML = `<strong style="color:var(--accent)">${imposterName}</strong> was the Imposter.<br>The group wins this round! 🚀`;
+  } else {
+    badge.className = 'result-badge result-lose';
+    badge.textContent = '😈 IMPOSTER WINS!';
+    document.getElementById('result-sub').textContent = 'Wrong vote. The ASTRO word was...';
+    extra.innerHTML = `<strong style="color:var(--imposter)">${imposterName}</strong> was the real Imposter.<br>Better luck next round!`;
+  }
+  
+  showScreen('result');
+}
+
+function playAgain() {
+  gameState.round++;
+  gameState.clues = [];
+  gameState.currentTurnIndex = 0;
+  enterGame();
+}
+
+// ==================== INIT ====================
+function init() {
+  renderWordBank();
+  
+  // Check if joining via URL param
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('join') === '1') {
+    initJoinScreen();
+    showScreen('join');
+  }
+
+  // Demo: pre-populate if no game exists
+  if (!loadShared('game')) {
+    // Auto-create a demo game for easy testing
+    const demoGroups = [
+      { id:1, name:'GROUP ALPHA', word:'GALAXY', players:[], imposterIndex: undefined, started: false },
+      { id:2, name:'GROUP BETA', word:'NEBULA', players:[], imposterIndex: undefined, started: false },
+      { id:3, name:'GROUP GAMMA', word:'COMET', players:[], imposterIndex: undefined, started: false },
+    ];
+    saveShared('game', demoGroups);
+    saveShared('session', { name:'Demo Session', groupSize: 5 });
+    gameState.groups = demoGroups;
+    gameState.session = { name: 'Demo Session', groupSize: 5 };
+  } else {
+    gameState.groups = loadShared('game');
+    gameState.session = loadShared('session');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
